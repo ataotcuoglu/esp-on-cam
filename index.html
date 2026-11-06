@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ESP Pose</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="pov">
+  <h1>ESP POSE</h1>
+  <p>Kamerana erismem lazım. Bir kere izin ver, bu oturumda bir daha sormam.</p>
+  <p id="pov-err" class="pov-err" role="alert" style="display:none"><b></b><span></span></p>
+  <button id="perm-btn">KAMERAYI AC</button>
+</div>
+
+<div id="notif" class="n-info" role="status" aria-live="polite">
+  <svg class="n-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+  <div class="n-body"><b class="n-title"></b><span class="n-text"></span></div>
+  <button class="n-x" aria-label="Bildirimi kapat">&times;</button>
+</div>
+
+<video id="video" playsinline autoplay muted></video>
+<canvas id="canvas"></canvas>
+
+<button id="menu-btn" aria-label="Menuyu ac / kapat" aria-expanded="true">≡</button>
+
+<div id="panel">
+  <div class="ph">
+    <span class="ph-t"><i class="live" id="live" aria-hidden="true"></i>ESP Pose</span>
+    <button class="ph-x">×</button>
+  </div>
+  <div class="ps">
+    <button class="btn-p btn-go" id="main-btn">BASLAT</button>
+    <button class="btn-s" id="cam-btn">↺ &nbsp;Kamera Cevir</button>
+    <button class="btn-s" id="rot-btn">⤢ &nbsp;Yatay Gorunum</button>
+    <button class="btn-s" id="q-btn">◈ &nbsp;Model</button>
+    <button class="btn-s" id="tour-btn">? &nbsp;Turu Tekrar Goster</button>
+    <div class="sep"></div>
+    <div class="sl">Iskelet</div>
+    <div class="row"><span class="rl">Kemikler</span><span class="tog on" id="t-bones">ON</span></div>
+    <div class="row"><span class="rl">Eklem Noktaları</span><span class="tog on" id="t-joints">ON</span></div>
+    <div class="sr">
+      <label>Kalınlık <span id="thick-v">2</span></label>
+      <input type="range" min="1" max="6" value="2" id="thick">
+    </div>
+    <div class="sep"></div>
+    <div class="sl">Kisi</div>
+    <div class="sr">
+      <label>Kisi Sayısı <span id="ppl-v">2</span></label>
+      <input type="range" min="1" max="4" value="2" id="ppl">
+    </div>
+    <div class="sep"></div>
+    <div class="sl">Can Barı</div>
+    <div class="row"><span class="rl">Can Barı</span><span class="tog on" id="t-health">ON</span></div>
+    <div class="sr">
+      <label>Can <span id="hp-v">100</span></label>
+      <input type="range" min="1" max="100" value="100" id="hp" aria-label="Can yuzdesi">
+    </div>
+    <div class="sep"></div>
+    <div class="sl">Kafa ESP</div>
+    <div class="row"><span class="rl">Kafa Halkası</span><span class="tog on" id="t-head">ON</span></div>
+    <div class="row"><span class="rl">Kafa Kutusu</span><span class="tog off" id="t-headbox">OFF</span></div>
+    <div class="sep"></div>
+    <div class="sl">El</div>
+    <div class="row"><span class="rl">El Iskeleti</span><span class="tog on" id="t-hands">ON</span></div>
+    <div class="row"><span class="rl">El ile Fotograf</span><span class="tog on" id="t-gesture">ON</span></div>
+    <div class="hint">Avucun yukarı bakarken basparmagınla isaret parmagını birlestir, yarım saniye tut, fotograf cekilir.</div>
+    <div class="sep"></div>
+    <div class="sl">Kutu</div>
+    <div class="row"><span class="rl">Vucut Kutusu</span><span class="tog off" id="t-box">OFF</span></div>
+    <div class="row" id="bs-row" style="display:none">
+      <span class="rl" style="color:var(--dim);font-size:10px">Stil</span>
+      <div style="display:flex;gap:10px;font-size:10px">
+        <span id="bs-c" class="bs-opt">Koseler</span>
+        <span id="bs-f" class="bs-opt">Tam</span>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div class="sl">Cizgiler</div>
+    <div class="lt" id="lines-hdr">
+      <span class="rl">Cizgi Ekle</span>
+      <span class="la" id="lines-arr">▾</span>
+    </div>
+    <div class="lm" id="lines-menu">
+      <div class="lo" id="lo-top"><span class="ll">— Ust</span><span class="tog off" id="lt-top">OFF</span></div>
+      <div class="lo" id="lo-mid"><span class="ll">— Orta</span><span class="tog off" id="lt-mid">OFF</span></div>
+      <div class="lo" id="lo-bot"><span class="ll">— Alt</span><span class="tog off" id="lt-bot">OFF</span></div>
+      <div class="lo" id="lo-vctr"><span class="ll">| Dikey</span><span class="tog off" id="lt-vctr">OFF</span></div>
+      <div class="lo" id="lo-snap"><span class="ll">◎ Snap</span><span class="tog off" id="lt-snap">OFF</span></div>
+    </div>
+    <div class="sep"></div>
+    <div class="sl">Iskelet Rengi</div>
+    <div class="sw-row" id="body-sw"></div>
+    <div class="sl">El Rengi</div>
+    <div class="sw-row" id="hand-sw"></div>
+    <div class="sep"></div>
+    <div class="sl">Bilgi</div>
+    <div class="row"><span class="rl">FPS Goster</span><span class="tog on" id="t-fps">ON</span></div>
+    <div class="row">
+      <span class="rl">Algılama</span>
+      <span style="font-size:9px;letter-spacing:1px;color:var(--dim)" id="stat-txt">—</span>
+    </div>
+    <div class="row">
+      <span class="rl">Cozunurluk</span>
+      <span style="font-size:9px;color:var(--dim);font-variant-numeric:tabular-nums" id="res-txt">—</span>
+    </div>
+    <div class="sep"></div>
+    <div class="sl">Ayarlar</div>
+    <div class="hint">Ayarların bu cihazda kendiliginden kaydoluyor.</div>
+    <button class="btn-s" id="share-btn">⇪ &nbsp;Ayarları Linkle Paylas</button>
+    <button class="btn-s" id="reset-btn">↺ &nbsp;Ayarları Sıfırla</button>
+  </div>
+</div>
+
+<div id="flash" aria-hidden="true"></div>
+<div id="rec-time" role="status" aria-live="off" style="display:none">KAYIT 00:00</div>
+
+<div id="count" style="display:none" aria-live="assertive" aria-atomic="true">
+  <span id="count-num"></span>
+  <small>Iptal etmek icin deklansore bas</small>
+</div>
+
+<div id="tour" style="display:none" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+  <div id="tour-spot"></div>
+  <div id="tour-card">
+    <div class="tour-step" id="tour-step"></div>
+    <h2 id="tour-title"></h2>
+    <p id="tour-text"></p>
+    <div class="tour-actions">
+      <button id="tour-skip" class="prev-b">Atla</button>
+      <button id="tour-next" class="prev-b prev-main">Ileri</button>
+    </div>
+  </div>
+</div>
+
+<div id="cap-bar">
+  <button class="cap" id="timer-btn" aria-label="Zamanlayıcı: kapalı" title="Zamanlayıcı">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13.5" r="7"/><path d="M12 10v4l2.5 1.5"/><path d="M9.5 3.5h5"/></svg>
+    <span class="cap-badge" id="timer-val" aria-hidden="true">0</span>
+  </button>
+  <button class="cap" id="shot-btn" aria-label="Fotograf cek" title="Fotograf cek">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+  </button>
+  <button class="cap" id="rec-btn" aria-label="Video kaydını baslat" aria-pressed="false" title="Video kaydı">
+    <svg class="i-dot" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="6.5" fill="currentColor"/></svg>
+    <svg class="i-stop" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/></svg>
+  </button>
+</div>
+
+<div id="prev" role="dialog" aria-modal="true" aria-label="Onizleme" style="display:none">
+  <div id="prev-media"></div>
+  <p id="prev-hint"></p>
+  <div class="prev-actions">
+    <button id="prev-save" class="prev-b prev-main">Galeriye Kaydet</button>
+    <button id="prev-close" class="prev-b">Kapat</button>
+  </div>
+</div>
+
+<div id="toast">Yukleniyor...</div>
+<div id="fps-txt"></div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
